@@ -7,8 +7,6 @@ This bash script implements a Proof of Work (PoW) algorithm using the Argon2 has
 - [Features](#features)
 - [Requirements](#requirements)
 - [Usage](#usage)
-- [Script Details](#script-details)
-- [License](#license)
 
 ## Features
 
@@ -32,8 +30,8 @@ You can install these utilities on Debian/Ubuntu-based systems with:
 sudo apt-get install argon2 xxd bc
 ```
 ```bash
-git clone https://github.com/TiredFromTelehack/proof-of-work.git
-cd proof-of-work
+git clone https://github.com/TiredFromTelehack/proof-of-work-solver.git
+cd proof-of-work-solver
 ```
 ```bash
 chmod +x proof_of_work.sh
