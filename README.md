@@ -27,6 +27,7 @@ Ensure the following utilities are installed on your system:
 
 You can install these utilities on Debian/Ubuntu-based systems with:
 
+## Usage
 ```bash
 sudo apt-get install argon2 xxd bc
 ```
