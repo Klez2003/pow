@@ -8,11 +8,15 @@ def generate_salt(length=16):
     return "SALTE" + base64.urlsafe_b64encode(salt).decode('utf-8')[:12]  # Prefix "SALTE" and limit the length
 
 def generate_pow_code():
-    """Generate a proof of work challenge code."""
-    memory_cost = 262144  # Example memory cost (64 MB)
-    time_cost = 1  # Example time cost
+    """Generate a proof of work challenge code with randomized parameters."""
+    # Randomize memory cost (between 1 and 262144 bytes)
+    memory_cost = random.randint(1, 262144)  # in bytes
+    # Set time cost to 1
+    time_cost = 1
+    # Generate a random salt
     salt = generate_salt()  # Generate the salt
-    difficulty = random.randint(1000, 2000)  # Random difficulty between 1000 and 2000
+    # Randomize difficulty (between 1000 and 1500)
+    difficulty = random.randint(1000, 1500)  # Random difficulty
     
     # Format the proof of work code
     pow_code = f"{memory_cost}:{time_cost}:{salt}:{difficulty}"
