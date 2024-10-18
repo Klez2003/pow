@@ -4,8 +4,8 @@ import string
 def generate_salt():
     # Ensure the first character after "SALT" is a lowercase letter
     first_char = random.choice(string.ascii_lowercase)
-    # Generate the remaining characters (11 more to make a total of 16)
-    remaining_chars = ''.join(random.choices(string.ascii_letters + string.digits, k=11))
+    # Generate the remaining characters (11 more to make a total of 16), all lowercase
+    remaining_chars = ''.join(random.choices(string.ascii_lowercase + string.digits, k=11))
     return 'SALT' + first_char + remaining_chars
 
 def generate_proof_of_work():
@@ -17,7 +17,8 @@ def generate_proof_of_work():
 
     # Format the challenge code
     proof_of_work_code = f"{memory_cost}:{time_cost}:{salt}:{difficulty}"
-    print(f"Generated Proof of Work Code: {proof_of_work_code}")
+    return proof_of_work_code
 
 if __name__ == "__main__":
-    generate_proof_of_work()
+    result = generate_proof_of_work()
+    print(f"Generated Proof of Work Code: {result}")
