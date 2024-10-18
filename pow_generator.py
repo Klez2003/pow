@@ -1,27 +1,20 @@
-import os
-import base64
 import random
+import string
 
 def generate_salt(length=16):
-    """Generate a URL-safe base64-encoded random salt."""
-    salt = os.urandom(length)  # Generate random bytes
-    return "SALTE" + base64.urlsafe_b64encode(salt).decode('utf-8')[:12]  # Prefix "SALTE" and limit the length
+    # Generate a salt with alphanumeric characters (A-Z, a-z, 0-9)
+    return 'SALT' + ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
-def generate_pow_code():
-    """Generate a proof of work challenge code with randomized parameters."""
-    # Randomize memory cost (between 1 and 262144 bytes)
-    memory_cost = random.randint(1, 262144)  # in bytes
-    # Set time cost to 1
-    time_cost = 1
-    # Generate a random salt
-    salt = generate_salt()  # Generate the salt
-    # Randomize difficulty (between 1000 and 1500)
-    difficulty = random.randint(1000, 1500)  # Random difficulty
-    
-    # Format the proof of work code
-    pow_code = f"{memory_cost}:{time_cost}:{salt}:{difficulty}"
-    return pow_code
+def generate_proof_of_work():
+    # Randomize memory cost, time cost, and difficulty
+    memory_cost = random.randint(1, 262144)  # Up to 262144
+    time_cost = 1  # Always set to 1
+    salt = generate_salt()
+    difficulty = random.randint(1000, 1500)  # Between 1000 and 1500
+
+    # Format the challenge code
+    proof_of_work_code = f"{memory_cost}:{time_cost}:{salt}:{difficulty}"
+    print(f"Generated Proof of Work Code: {proof_of_work_code}")
 
 if __name__ == "__main__":
-    pow_code = generate_pow_code()
-    print("Generated Proof of Work Code:", pow_code)
+    generate_proof_of_work()
