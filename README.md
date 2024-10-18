@@ -34,7 +34,7 @@ You can install the required utilities on Debian/Ubuntu-based systems using the 
 
 ```bash
 sudo apt-get install argon2 xxd bc
-
+```
 If you're using a different Linux distribution, please consult your package manager's documentation.
 
 ## Usage
@@ -46,19 +46,19 @@ If you're using a different Linux distribution, please consult your package mana
 ```bash
 git clone https://github.com/TiredFromTelehack/proof-of-work-solver.git
 cd proof-of-work-solver
-
+```
 
 2. Make the script executable:
 
 ```bash
 chmod +x proof_of_work.sh
-
+```
 
 3. Run the script with a challenge code:
 
 ```bash
 ./proof_of_work.sh "262144:1:SALTe7e590c2f902:1500"
-
+```
 
 
 ## Python Salt Generator Usage
@@ -70,7 +70,7 @@ chmod +x proof_of_work.sh
 
 ```bash
 python3 pow_generator.py
-
+```
 
 
 ## Examples
@@ -81,7 +81,7 @@ Run the Bash script with a specific challenge code:
 
 ```bash
 ./proof_of_work.sh "262144:1:SALTe7e590c2f902:1500"
-
+```
 Output Example:
 
 Estimated iterations: 1500
@@ -97,7 +97,7 @@ Run the Python salt generator to create a random challenge code:
 
 ```bash
 python3 pow_generator.py
-
+```
 Output Example:
 
 Generated Proof of Work Code: 123456:1:SALTe7e590c2f902:1450
