@@ -4,13 +4,13 @@ This repository contains scripts for implementing a Proof of Work (PoW) algorith
 
 ## Table of Contents
 
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Bash Script Usage](#bash-script-usage)
-  - [Python Salt Generator Usage](#python-salt-generator-usage)
-- [Examples](#examples)
+- [Features](#afeatures)
+- [Requirements](#Requirements)
+- [Installation](#Installation)
+- [Usage](#Usage)
+- [Bash Script Usage](#Bash Script Usage)
+- [Python Salt Generator Usage](#Python Salt Generator Usage)
+- [Examples](#Examples)
 
 ## Features
 
