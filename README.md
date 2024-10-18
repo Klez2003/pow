@@ -4,12 +4,10 @@ This repository contains scripts for implementing a Proof of Work (PoW) algorith
 
 ## Table of Contents
 
-- [Features](#afeatures)
+- [Features](#Features)
 - [Requirements](#Requirements)
 - [Installation](#Installation)
 - [Usage](#Usage)
-- [Bash Script Usage](#Bash Script Usage)
-- [Python Salt Generator Usage](#Python Salt Generator Usage)
 - [Examples](#Examples)
 
 ## Features
@@ -39,8 +37,6 @@ If you're using a different Linux distribution, please consult your package mana
 
 ## Usage
 
-## Bash Script Usage
-
 1. Clone the repository to your local machine:
 
 ```bash
@@ -60,9 +56,6 @@ chmod +x proof_of_work.sh
 ./proof_of_work.sh "262144:1:SALTe7e590c2f902:1500"
 ```
 
-
-## Python Salt Generator Usage
-
 1. Make sure you have Python installed (Python 3 is recommended).
 
 
@@ -75,8 +68,6 @@ python3 pow_generator.py
 
 ## Examples
 
-## Bash Script Example
-
 Run the Bash script with a specific challenge code:
 
 ```bash
@@ -86,12 +77,12 @@ Output Example:
 
 Estimated iterations: 1500
 Time Cost: 1
-Elapsed Time: 5 seconds.
+Elapsed Time: 700 seconds.
 SOLUTION FOUND
 Your unblock code is: UNBLOCK-X7J2L9D5
 This is the code you enter into the site to pass the challenge.
 
-## Python Salt Generator Example
+- **Python Salt Generator Example**:
 
 Run the Python salt generator to create a random challenge code:
 
@@ -100,14 +91,15 @@ python3 pow_generator.py
 ```
 Output Example:
 
-Generated Proof of Work Code: 123456:1:SALTe7e590c2f902:1450
+Generated Proof of Work Code: 262144:1:SALTe7e590c2f902:1500
 
 The generated code includes:
 
-Memory Cost: Randomized up to 262,144 bytes.
+Memory Cost: Always Set To 262,144 bytes.
 
 Time Cost: Always set to 1.
 
-Salt: Randomized, prefixed with "SALTE".
+Salt: Randomized, prefixed with "SALT".
 
-Difficulty: Randomized between 1000 and 1500.
+Difficulty: Always Set To 1500.
+
