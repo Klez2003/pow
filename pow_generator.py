@@ -6,11 +6,11 @@ def generate_salt(length=16):
     return 'SALT' + ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
 def generate_proof_of_work():
-    # Randomize memory cost, time cost, and difficulty
-    memory_cost = random.randint(1, 262144)  # Up to 262144
+    # Set fixed memory cost and difficulty
+    memory_cost = 262144
     time_cost = 1  # Always set to 1
     salt = generate_salt()
-    difficulty = random.randint(1000, 1500)  # Between 1000 and 1500
+    difficulty = 1500
 
     # Format the challenge code
     proof_of_work_code = f"{memory_cost}:{time_cost}:{salt}:{difficulty}"
