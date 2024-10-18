@@ -1,9 +1,12 @@
 import random
 import string
 
-def generate_salt(length=16):
-    # Generate a salt with alphanumeric characters (A-Z, a-z, 0-9)
-    return 'SALT' + ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+def generate_salt():
+    # Ensure the first character after "SALT" is a lowercase letter
+    first_char = random.choice(string.ascii_lowercase)
+    # Generate the remaining characters (11 more to make a total of 16)
+    remaining_chars = ''.join(random.choices(string.ascii_letters + string.digits, k=11))
+    return 'SALT' + first_char + remaining_chars
 
 def generate_proof_of_work():
     # Set fixed memory cost and difficulty
