@@ -2,11 +2,19 @@ import random
 import string
 
 def generate_salt():
-    # Ensure the first character after "SALT" is a lowercase letter
-    first_char = random.choice(string.ascii_lowercase)
-    # Generate the remaining characters (11 more to make a total of 16), all lowercase
-    remaining_chars = ''.join(random.choices(string.ascii_lowercase + string.digits, k=11))
-    return 'SALT' + first_char + remaining_chars
+    # Generate the salt in the specified format
+    first_letter = random.choice(string.ascii_lowercase)
+    first_number = random.choice(string.digits)
+    second_letter = random.choice(string.ascii_lowercase)
+    three_numbers1 = ''.join(random.choices(string.digits, k=3))
+    third_letter = random.choice(string.ascii_lowercase)
+    second_number = random.choice(string.digits)
+    fourth_letter = random.choice(string.ascii_lowercase)
+    three_numbers2 = ''.join(random.choices(string.digits, k=3))
+
+    # Combine to form the salt
+    salt = f"SALT{first_letter}{first_number}{second_letter}{three_numbers1}{third_letter}{second_number}{fourth_letter}{three_numbers2}"
+    return salt
 
 def generate_proof_of_work():
     # Set fixed memory cost and difficulty
