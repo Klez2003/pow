@@ -25,7 +25,10 @@ gcc -o solver solver.c -lm
 ```bash
 ruby proof_of_work.rb "262144:1:SALTe7e590c2f902:1500"
 ```
-
+```bash
+chmod +x solver.sh
+./solver.sh "262144:1:SALTe7e590c2f902:1500"
+```
 ### Summary of the Markdown Content
 
 - **Requirements**: Lists required utilities and how to install them.
