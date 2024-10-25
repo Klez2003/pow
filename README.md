@@ -47,13 +47,13 @@ cd proof-of-work-solver
 2. Make the script executable:
 
 ```bash
-chmod +x proof_of_work.sh
+chmod +x solver.sh
 ```
 
 3. Run the script with a challenge code:
 
 ```bash
-./proof_of_work.sh "262144:1:SALTe7e590c2f902:1500"
+./solver.sh "262144:1:SALTe7e590c2f902:1500"
 ```
 
 1. Make sure you have Python installed (Python 3 is recommended).
