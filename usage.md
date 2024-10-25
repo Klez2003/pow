@@ -35,5 +35,3 @@ chmod +x solver.sh
 - **C Version**: Instructions for compiling and running the C program, including example output.
 - **Ruby Version**: Instructions for running the Ruby script, including example output.
 - **Conclusion**: Encourages the user to follow the instructions for successful execution.
-
-You can save the above content in a file named `README.md`. Let me know if you need any further modifications!
