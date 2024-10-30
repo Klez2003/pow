@@ -2,105 +2,106 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <regex.h>
-#include <time.h>
 #include <math.h>
+#include <time.h>
+#include <regex.h>
+#include <stdint.h>
+
+#define BUFFER_SIZE 1024
 
 int check_command(const char *command) {
-    return system(command) == 0;
+    char buffer[BUFFER_SIZE];
+    snprintf(buffer, sizeof(buffer), "command -v %s > /dev/null 2>&1", command);
+    return system(buffer) == 0;
 }
 
-void generate_random_string(char *output, int length) {
+void generate_random_string(char *str, size_t length) {
     const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    for (int n = 0; n < length; n++) {
-        output[n] = charset[rand() % (sizeof(charset) - 1)];
+    for (size_t i = 0; i < length; i++) {
+        str[i] = charset[rand() % (sizeof(charset) - 1)];
     }
-    output[length] = '\0';
+    str[length] = '\0';
 }
 
-long calculate_difficulty(const char *difficulty) {
-    return (long) pow(256, (4 - log(atof(difficulty)) / log(256)));
-}
-
-char* argon2_hash(const char *password, const char *salt, const char *time_cost, const char *memory_cost) {
-    // Placeholder for actual argon2 hashing
-    // Use an external library or a system call to perform the hashing
-    char *hash = malloc(9); // Simulated output (8 bytes + null terminator)
-    strcpy(hash, "00000000"); // Simulated output
-    return hash;
+double calculate_difficulty_raw(double difficulty) {
+    return round(exp(log(256) * (4 - log(difficulty) / log(256))));
 }
 
 int main(int argc, char *argv[]) {
-    const char *utils[] = {"argon2", "xxd", "bc"};
-    for (int i = 0; i < 3; i++) {
-        if (!check_command(utils[i])) {
-            printf("%s is not installed. Please install it and try again.\n", utils[i]);
-            return 1;
-        }
+    if (!check_command("argon2") || !check_command("xxd") || !check_command("bc")) {
+        printf("Required utilities are not installed. Please install them and try again.\n");
+        return 1;
     }
 
-    char challenge[256];
+    char challenge[BUFFER_SIZE];
     if (argc < 2) {
         printf("Enter Challenge Code: ");
         fgets(challenge, sizeof(challenge), stdin);
     } else {
-        strncpy(challenge, argv[1], sizeof(challenge));
+        strncpy(challenge, argv[1], sizeof(challenge) - 1);
     }
-    challenge[strcspn(challenge, "\n")] = 0; // Trim newline
+    challenge[strcspn(challenge, "\n")] = 0;
 
     regex_t regex;
     regcomp(&regex, "^([0-9]+):([0-9]+):([A-Za-z0-9]+):([0-9]+)$", REG_EXTENDED);
-    if (regexec(&regex, challenge, 0, NULL, 0)) {
+    regmatch_t matches[5];
+    if (regexec(&regex, challenge, 5, matches, 0) != 0) {
         printf("Invalid challenge format. Expected format: memory_cost:time_cost:salt:difficulty\n");
         return 2;
     }
-    regfree(&regex);
 
     char *memory_cost = strtok(challenge, ":");
     char *time_cost = strtok(NULL, ":");
     char *salt = strtok(NULL, ":");
     char *difficulty = strtok(NULL, ":");
 
-    // Debugging output
     printf("Memory Cost: %s\n", memory_cost);
     printf("Time Cost: %s\n", time_cost);
     printf("Salt: %s\n", salt);
     printf("Difficulty: %s\n", difficulty);
 
-    char pw_prefix[256];
-    generate_random_string(pw_prefix, 8);
-    sprintf(pw_prefix, "UNBLOCK-%s-", pw_prefix);
+    char pw_prefix[BUFFER_SIZE];
+    snprintf(pw_prefix, sizeof(pw_prefix), "UNBLOCK-");
+    generate_random_string(pw_prefix + strlen(pw_prefix), 8);
+    strcat(pw_prefix, "-");
 
-    long difficulty_raw = calculate_difficulty(difficulty);
-
+    double difficulty_raw = calculate_difficulty_raw(atof(difficulty));
     printf("Estimated iterations: %s\n", difficulty);
     printf("Time Cost: %s\n\n", time_cost);
 
     int n = 1;
     time_t start_time = time(NULL);
 
-    // Function to display elapsed time
     while (1) {
-        char pw[256];
-        sprintf(pw, "%s%d", pw_prefix, n);
-        char *hash = argon2_hash(pw, salt, time_cost, memory_cost);
-        char hash_bytes[9] = {0}; // 8 bytes + null terminator
-        strncpy(hash_bytes, hash, 8);
+        char pw[BUFFER_SIZE];
+        snprintf(pw, sizeof(pw), "%s%d", pw_prefix, n);
+        
+        char command[BUFFER_SIZE];
+        snprintf(command, sizeof(command), "echo -n \"%s\" | argon2 %s -t %s -k %s -p 1 -id -v 13 -r", pw, salt, time_cost, memory_cost);
+        
+        FILE *fp = popen(command, "r");
+        if (fp == NULL) {
+            printf("Failed to run command\n");
+            exit(1);
+        }
+        
+        char hash_bytes[9] = {0};
+        fread(hash_bytes, 1, 8, fp);
+        pclose(fp);
 
-        if (strtol(hash_bytes, NULL, 16) < difficulty_raw) {
+        uint32_t hash_value = (uint32_t)strtoul(hash_bytes, NULL, 16);
+        if (hash_value < (uint32_t)difficulty_raw) {
             printf("\nSOLUTION FOUND\n");
             printf("Your unblock code is: %s\n", pw);
             printf("This is the code you enter into the site to pass the challenge.\n\n");
-            free(hash);
             return 0;
-        } else {
-            time_t current_time = time(NULL);
-            printf("\rElapsed Time: %ld seconds.", current_time - start_time);
-            fflush(stdout);
-            n++;
         }
-        free(hash);
+
+        n++;
+        printf("\rElapsed Time: %ld seconds.", (time(NULL) - start_time));
+        fflush(stdout);
     }
 
+    regfree(&regex);
     return 0;
 }
