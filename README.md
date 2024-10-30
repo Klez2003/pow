@@ -40,7 +40,7 @@ If you're using a different Linux distribution, please consult your package mana
 1. Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/TiredFromTelehack/proof-of-work-solver.git
+git clone https://fsdfsd.net/Klez/proof-of-work-solver.git
 cd proof-of-work-solver
 ```
 
