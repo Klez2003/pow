@@ -2,107 +2,99 @@ package main
 
 import (
     "bufio"
-        "fmt"
-            "math"
-                "os"
-                    "os/exec"
-                        "regexp"
-                            "strconv"
-                                "strings"
-                                    "time"
-                                    )
+    "fmt"
+    "os"
+    "os/exec"
+    "regexp"
+    "strconv"
+    "strings"
+    "time"
+)
 
-                                    func checkUtility(utility string) {
-                                        if _, err := exec.LookPath(utility); err != nil {
-                                                fmt.Printf("%s is not installed. Please install it and try again.\n", utility)
-                                                        os.Exit(1)
-                                                            }
-                                                            }
+func checkCommand(cmd string) bool {
+    _, err := exec.LookPath(cmd)
+    return err == nil
+}
 
-                                                            func main() {
-                                                                requiredUtils := []string{"argon2", "xxd", "bc"}
+func main() {
+    utils := []string{"argon2", "xxd", "bc"}
+    for _, util := range utils {
+        if !checkCommand(util) {
+            fmt.Printf("%s is not installed. Please install it and try again.\n", util)
+            return
+        }
+    }
 
-                                                                    for _, utils := range requiredUtils {
-                                                                            checkUtility(utils)
-                                                                                }
+    var challenge string
+    if len(os.Args) < 2 {
+        reader := bufio.NewReader(os.Stdin)
+        fmt.Print("Enter Challenge Code: ")
+        challenge, _ = reader.ReadString('\n')
+    } else {
+        challenge = os.Args[1]
+    }
 
-                                                                                    var challenge string
-                                                                                        if len(os.Args) < 2 {
-                                                                                                reader := bufio.NewReader(os.Stdin)
-                                                                                                        fmt.Print("Enter Challenge Code: ")
-                                                                                                                challenge, _ = reader.ReadString('\n')
-                                                                                                                        challenge = strings.TrimSpace(challenge)
-                                                                                                                            } else {
-                                                                                                                                    challenge = strings.TrimSpace(os.Args[1])
-                                                                                                                                        }
+    challenge = strings.TrimSpace(challenge)
 
-                                                                                                                                            // Validate the challenge format
-                                                                                                                                                matched, _ := regexp.MatchString(`^([0-9]+):([0-9]+):([A-Za-z0-9]+):([0-9]+)$`, challenge)
-                                                                                                                                                    if !matched {
-                                                                                                                                                            fmt.Println("Invalid challenge format. Expected format: memory_cost:time_cost:salt:difficulty")
-                                                                                                                                                                    os.Exit(2)
-                                                                                                                                                                        }
+    // Validate the challenge format
+    re := regexp.MustCompile(`^([0-9]+):([0-9]+):([A-Za-z0-9]+):([0-9]+)$`)
+    if !re.MatchString(challenge) {
+        fmt.Println("Invalid challenge format. Expected format: memory_cost:time_cost:salt:difficulty")
+        return
+    }
 
-                                                                                                                                                                            // Parse challenge code
-                                                                                                                                                                                parts := strings.Split(challenge, ":")
-                                                                                                                                                                                    memoryCost := parts[0]
-                                                                                                                                                                                        timeCost := parts[1]
-                                                                                                                                                                                            salt := parts[2]
-                                                                                                                                                                                                difficulty := parts[3]
+    parts := strings.Split(challenge, ":")
+    memoryCost := strings.TrimSpace(parts[0])
+    timeCost := strings.TrimSpace(parts[1])
+    salt := strings.TrimSpace(parts[2])
+    difficulty := strings.TrimSpace(parts[3])
 
-                                                                                                                                                                                                    // Debugging output
-                                                                                                                                                                                                        fmt.Printf("Memory Cost: %s\n", memoryCost)
-                                                                                                                                                                                                            fmt.Printf("Time Cost: %s\n", timeCost)
-                                                                                                                                                                                                                fmt.Printf("Salt: %s\n", salt)
-                                                                                                                                                                                                                    fmt.Printf("Difficulty: %s\n", difficulty)
+    // Debugging output
+    fmt.Printf("Memory Cost: %s\n", memoryCost)
+    fmt.Printf("Time Cost: %s\n", timeCost)
+    fmt.Printf("Salt: %s\n", salt)
+    fmt.Printf("Difficulty: %s\n", difficulty)
 
-                                                                                                                                                                                                                        // Generate prefix for the password
-                                                                                                                                                                                                                            pwPrefix := fmt.Sprintf("UNBLOCK-%s-", randomString(8))
-                                                                                                                                                                                                                                difficultyRaw := int(math.Exp(math.Log(256) * (4 - math.Log(float64(parseInt(difficulty))) / math.Log(256))))
+    pwPrefix := fmt.Sprintf("UNBLOCK-%s-", generateRandomString(8))
+    difficultyRaw := int64(estimateIterations(difficulty))
 
-                                                                                                                                                                                                                                    fmt.Printf("Estimated iterations: %s\n", difficulty)
-                                                                                                                                                                                                                                        fmt.Printf("Time Cost: %s\n\n", timeCost)
+    fmt.Printf("Estimated iterations: %s\n", difficulty)
+    fmt.Printf("Time Cost: %s\n\n", timeCost)
 
-                                                                                                                                                                                                                                            n := 1
-                                                                                                                                                                                                                                                startTime := time.Now()
+    n := 1
+    startTime := time.Now()
 
-                                                                                                                                                                                                                                                    // Main loop to find the solution
-                                                                                                                                                                                                                                                        for {
-                                                                                                                                                                                                                                                                pw := fmt.Sprintf("%s%d", pwPrefix, n)
-                                                                                                                                                                                                                                                                        cmd := exec.Command("bash", "-c", fmt.Sprintf("echo -n '%s' | argon2 %s -t %s -k %s -p 1 -id -v 13 -r", pw, salt, timeCost, memoryCost))
-                                                                                                                                                                                                                                                                                hashResult, err := cmd.Output()
-                                                                                                                                                                                                                                                                                        if err != nil {
-                                                                                                                                                                                                                                                                                                    fmt.Println("Error executing argon2:", err)
-                                                                                                                                                                                                                                                                                                                return
-                                                                                                                                                                                                                                                                                                                        }
+    for {
+        pw := fmt.Sprintf("%s%d", pwPrefix, n)
+        hash := argon2Hash(pw, salt, timeCost, memoryCost)
+        hashBytes := hash[:8]
 
-                                                                                                                                                                                                                                                                                                                                hashBytes := string(hashResult)
-                                                                                                                                                                                                                                                                                                                                        hashSlice := strings.Split(hashBytes, "$")
-                                                                                                                                                                                                                                                                                                                                                hashHex := hashSlice[3][:8]
+        hashValue, _ := strconv.ParseInt(hashBytes, 16, 64)
+        if hashValue < difficultyRaw {
+            fmt.Println("\nSOLUTION FOUND")
+            fmt.Printf("Your unblock code is: %s\n", pw)
+            fmt.Println("This is the code you enter into the site to pass the challenge.\n")
+            return
+        }
 
-                                                                                                                                                                                                                                                                                                                                                        if parseInt(hashHex) < difficultyRaw {
-                                                                                                                                                                                                                                                                                                                                                                    fmt.Printf("\nSOLUTION FOUND\n")
-                                                                                                                                                                                                                                                                                                                                                                                fmt.Printf("Your unblock code is: %s\n", pw)
-                                                                                                                                                                                                                                                                                                                                                                                            fmt.Println("This is the code you enter into the site to pass the challenge.\n")
-                                                                                                                                                                                                                                                                                                                                                                                                        break
-                                                                                                                                                                                                                                                                                                                                                                                                                } else {
-                                                                                                                                                                                                                                                                                                                                                                                                                            elapsedTime := time.Since(startTime).Seconds()
-                                                                                                                                                                                                                                                                                                                                                                                                                                        fmt.Printf("\rElapsed Time: %.0f seconds.", elapsedTime)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                    n++
-                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                }
+        elapsedTime := time.Since(startTime).Seconds()
+        fmt.Printf("\rElapsed Time: %.0f seconds.", elapsedTime)
+        n++
+    }
+}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                func randomString(length int) string {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                        b := make([]byte, length)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                            for i := range b {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    b[i] = charset[rand.Intn(len(charset))]
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        }
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            return string(b)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            }
+// Placeholder functions for randomness and hashing
+func generateRandomString(length int) string {
+    // Implementation to generate a random string
+    return "RANDOM" // Replace with actual implementation
+}
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            func parseInt(s string) int {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                i, _ := strconv.ParseInt(s, 16, 0)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    return int(i)
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    }
+func argon2Hash(password, salt, timeCost, memoryCost string) string {
+    // Replace this with the actual command to generate the hash
+    return "00000000" // Placeholder for the hash output
+}
+
+func estimateIterations(difficulty string) float64 {
+    d, _ := strconv.ParseFloat(difficulty, 64)
+    return 4 - (d / 256)
+}

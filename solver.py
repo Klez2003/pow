@@ -1,69 +1,68 @@
 import subprocess
 import sys
-import time
 import re
+import time
 import os
 import random
-import math
+import string
 
-# Check if required utilities are installed
-required_utils = ['argon2', 'xxd', 'bc']
+def check_command(command):
+    return subprocess.call(['which', command], stdout=subprocess.PIPE, stderr=subprocess.PIPE) == 0
 
-for utils in required_utils:
-    if subprocess.call(f"command -v {utils}", shell=True) != 0:
-            print(f"{utils} is not installed. Please install it and try again.")
-                    sys.exit(1)
+def generate_random_string(length):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
 
-                    # Read the challenge code from argument or prompt user
-                    if len(sys.argv) < 2:
-                        challenge = input("Enter Challenge Code: ")
-                        else:
-                            challenge = sys.argv[1].strip()
+def argon2_hash(password, salt, time_cost, memory_cost):
+    # Replace this with actual call to argon2
+    result = subprocess.run(['argon2', password, '-t', time_cost, '-k', memory_cost, '-p', '1', '-id', '-v', '13', '-r', salt], capture_output=True, text=True)
+    return result.stdout.splitlines()[0]  # Simulated output
 
-                            # Validate the challenge format
-                            if not re.match(r'^([0-9]+):([0-9]+):([A-Za-z0-9]+):([0-9]+)$', challenge):
-                                print("Invalid challenge format. Expected format: memory_cost:time_cost:salt:difficulty")
-                                    sys.exit(2)
+def main():
+    required_utils = ['argon2', 'xxd', 'bc']
+    for util in required_utils:
+        if not check_command(util):
+            print(f"{util} is not installed. Please install it and try again.")
+            return
 
-                                    # Parse challenge code
-                                    memory_cost, time_cost, salt, difficulty = challenge.split(':')
-                                    memory_cost = memory_cost.strip()
-                                    time_cost = time_cost.strip()
-                                    salt = salt.strip()
-                                    difficulty = difficulty.strip()
+    challenge = sys.argv[1] if len(sys.argv) > 1 else input("Enter Challenge Code: ").strip()
 
-                                    # Debugging output
-                                    print(f"Memory Cost: {memory_cost}")
-                                    print(f"Time Cost: {time_cost}")
-                                    print(f"Salt: {salt}")
-                                    print(f"Difficulty: {difficulty}")
+    # Validate the challenge format
+    if not re.match(r'^([0-9]+):([0-9]+):([A-Za-z0-9]+):([0-9]+)$', challenge):
+        print("Invalid challenge format. Expected format: memory_cost:time_cost:salt:difficulty")
+        return
 
-                                    # Generate prefix for the password
-                                    pw_prefix = f"UNBLOCK-{''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=8))}-"
-                                    difficulty_raw = int(math.exp(math.log(256) * (4 - math.log(int(difficulty), 256))))  # Calculate difficulty threshold
+    memory_cost, time_cost, salt, difficulty = map(str.strip, challenge.split(':'))
 
-                                    print(f"Estimated iterations: {difficulty}")
-                                    print(f"Time Cost: {time_cost}\n")
+    # Debugging output
+    print(f"Memory Cost: {memory_cost}")
+    print(f"Time Cost: {time_cost}")
+    print(f"Salt: {salt}")
+    print(f"Difficulty: {difficulty}")
 
-                                    n = 1
-                                    start_time = time.time()
+    pw_prefix = f"UNBLOCK-{generate_random_string(8)}-"
+    difficulty_raw = round(256 ** (4 - len(difficulty) / 256))
 
-                                    # Main loop to find the solution
-                                    while True:
-                                        pw = f"{pw_prefix}{n}"
-                                            # Create hash using argon2
-                                                hash_result = subprocess.check_output(
-                                                        f"echo -n '{pw}' | argon2 {salt} -t {time_cost} -k {memory_cost} -p 1 -id -v 13 -r",
-                                                                shell=True, text=True, stderr=subprocess.DEVNULL
-                                                                    )
-                                                                        hash_bytes = hash_result.split('$')[3][:8]  # Extract the first 8 characters of the hash
+    print(f"Estimated iterations: {difficulty}")
+    print(f"Time Cost: {time_cost}\n")
 
-                                                                            if int(hash_bytes, 16) < difficulty_raw:
-                                                                                    print(f"\nSOLUTION FOUND")
-                                                                                            print(f"Your unblock code is: {pw}")
-                                                                                                    print("This is the code you enter into the site to pass the challenge.\n")
-                                                                                                            break
-                                                                                                                else:
-                                                                                                                        elapsed_time = int(time.time() - start_time)
-                                                                                                                                print(f"\rElapsed Time: {elapsed_time} seconds.", end="")
-                                                                                                                                        n += 1
+    n = 1
+    start_time = time.time()
+
+    while True:
+        pw = f"{pw_prefix}{n}"
+        hash_result = argon2_hash(pw, salt, time_cost, memory_cost)
+        hash_bytes = hash_result[:8]
+
+        if int(hash_bytes, 16) < difficulty_raw:
+            print("\nSOLUTION FOUND")
+            print(f"Your unblock code is: {pw}")
+            print("This is the code you enter into the site to pass the challenge.\n")
+            return
+
+        elapsed_time = time.time() - start_time
+        print(f"\rElapsed Time: {elapsed_time:.0f} seconds.", end='')
+
+        n += 1
+
+if __name__ == "__main__":
+    main()
