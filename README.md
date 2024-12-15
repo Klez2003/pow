@@ -41,7 +41,7 @@ If you're using a different Linux distribution, please consult your package mana
 
 ```bash
 git clone https://github.com/Klez2003/pow.git
-cd proof-of-work-solver
+cd pow/
 ```
 
 2. Make the script executable:
